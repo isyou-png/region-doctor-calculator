@@ -1,0 +1,226 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>지역의사 의무복무 계산기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="author" content="클럽하와이">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 한 줄 세로 진행선 위에 ①~④ 단계를 쌓고, 아래에 결과 패널을 둔다 */
+:root{--bg:#f7f9fa;--card:#ffffff;--fg:#17232b;--sub:#5a6872;--line:#d6dee3;--accent:#0b6e8a;--accent-soft:#e3f1f5;--ok:#1d7a3e;--ok-soft:#e4f4e9;--no:#b3261e;--no-soft:#fbe9e7;
+--font:'IBM Plex Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101619;--card:#172024;--fg:#e6edf0;--sub:#9aabb4;--line:#2c3a40;--accent:#5cc3df;--accent-soft:#163540;--ok:#6fd38f;--ok-soft:#173324;--no:#ff8a80;--no-soft:#3a1d1b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101619;--card:#172024;--fg:#e6edf0;--sub:#9aabb4;--line:#2c3a40;--accent:#5cc3df;--accent-soft:#163540;--ok:#6fd38f;--ok-soft:#173324;--no:#ff8a80;--no-soft:#3a1d1b;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.65}
+.wrap{max-width:760px;margin:0 auto;padding-block:28px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-size:12px;letter-spacing:.08em;color:var(--accent);font-weight:700}
+h1{font-size:26px;margin:4px 0 6px;text-wrap:balance}
+.lead{color:var(--sub);margin:0 0 20px;font-size:14px}
+.steps{display:flex;flex-direction:column;gap:14px;position:relative}
+.step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:32px 1fr;gap:4px 12px}
+.num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:14px}
+.step h2{font-size:16px;margin:2px 0 6px}
+.body{grid-column:2;min-width:0;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+label{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+select,input{font:inherit;font-size:15px;padding:5px 8px;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;max-width:100%}
+select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=number]{width:72px;font-variant-numeric:tabular-nums}
+.full{flex-basis:100%;font-size:13px;color:var(--sub)}
+.tag{font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.tag.in{color:var(--ok);background:var(--ok-soft)}.tag.out{color:var(--no);background:var(--no-soft)}
+.area{flex-basis:100%;background:var(--accent-soft);border-radius:6px;padding:6px 10px;font-size:14px}
+details.step{display:block}details summary{cursor:pointer;font-weight:500}details .body{margin-top:10px}
+#out{margin-top:20px;background:var(--card);border:2px solid var(--accent);border-radius:12px;padding:18px}
+.res{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:12px}
+.res .k{color:var(--sub);font-size:14px}.res .v{font-size:34px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}th{color:var(--sub);font-weight:500;font-size:13px}
+td:nth-child(-n+3){white-space:nowrap}
+.note{color:var(--sub);font-size:13px}.w{color:var(--no);font-size:14px;margin:12px 0 0}
+footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);color:var(--sub);font-size:12px;display:flex;flex-direction:column;gap:2px}
+footer b{color:var(--fg)}
+@media (max-width:480px){h1{font-size:22px}.step{grid-template-columns:1fr}.num{display:none}.body{grid-column:1}}
+</style>
+<div class="wrap">
+<div class="brand">CLUB HAWAII</div>
+<h1>지역의사 의무복무 계산기</h1>
+<p class="lead">의무복무는 누구나 10년입니다. 어디서 인턴과 레지던트를 하는지, 어떤 전공을 고르는지에 따라 수련기간이 의무복무에 들어가는 정도가 달라집니다. 근거: 「2027학년도 지역의사선발전형 안내」 p.3, p.10~13</p>
+
+<div class="steps">
+<section class="step"><div class="num">1</div><div><h2>대학·선발</h2></div>
+<div class="body"><label>의과대학 <select id="u"></select></label>
+<label>선발 <select id="t"><option>진료권</option><option>광역권</option></select></label>
+<label id="jl">진료권 <select id="j"></select></label>
+<div id="area" class="area"></div></div></section>
+
+<section class="step"><div class="num">2</div><div><h2>인턴은 어디서 하나요?</h2></div>
+<div class="body"><label>병원 위치 <select id="ip"></select></label>
+<span>기간 <b>1년</b> <span class="note">(고정)</span></span><input id="iy" type="hidden" value="1">
+<span id="it" class="tag"></span></div></section>
+
+<section class="step"><div class="num">3</div><div><h2>전공 선택</h2></div>
+<div class="body"><label>전공 <select id="m"></select></label><span id="mt" class="note"></span></div></section>
+
+<section class="step"><div class="num">4</div><div><h2>레지던트는 어디서 하나요?</h2></div>
+<div class="body"><label>병원 위치 <select id="rp"></select></label>
+<span>기간 <b id="ryt"></b> <span class="note">(전공에 따라 자동)</span></span><input id="ry" type="hidden">
+<span id="rt" class="tag"></span>
+<div class="full">레지던트 기간은 「전문의의 수련 및 자격 인정 등에 관한 규정」을 따릅니다. 내과·외과·소아청소년과·결핵과·예방의학과·가정의학과 3년, 나머지 과목 4년입니다. 가정의학과는 인턴 없이 시작할 수 있습니다.</div></div></section>
+
+<details class="step"><summary>그 밖의 조정 (선택)</summary>
+<div class="body" style="grid-column:auto"><label>추가 산입(출산 특례 등) <input id="etc" type="number" step="0.25" value="0">년</label>
+<label>불산입 기간(병역·휴직 등) <input id="non" type="number" step="0.5" value="0">년</label>
+<label>입학연도 <input id="yr" type="number" value="2027" style="width:88px"></label></div></details>
+</div>
+
+<div id="out" aria-live="polite"></div>
+
+<footer>
+<span>© 2026 <b>클럽하와이</b>. All rights reserved.</span>
+<span>이 계산기는 인턴과 레지던트를 각각 한 병원에서 마치고, 수련 중에 병원을 옮기지 않는다고 가정합니다.</span>
+<span>클럽하와이가 만든 계산기입니다. 무단 복제·배포를 금합니다. 계산 결과는 참고용이며, 최종 판단은 대학 모집요강과 관계 기관 안내를 따르세요.</span>
+</footer>
+</div>
+<script>
+/*
+ * 지역의사제 의무복무 계산기 v2 (2026-11-19)
+ * © 2026 클럽하와이. All rights reserved. 무단 복제·배포 금지.
+ * 근거: 「2027학년도 지역의사선발전형 안내」 p.3(진료권), p.10(의무복무지역 대응표), p.11~13(수련기간 산입)
+ * 입력 순서: ① 대학·선발 → ② 인턴(어디서) → ③ 전공 선택 → ④ 레지던트(어디서)
+ * 수련 장소는 '진료권 이름' 또는 '그 밖의 지역'으로 받고, 의무복무지역 안인지는 계산기가 판정한다.
+ * 기타_산입_연수: 출산 3개월 산입 특례 등 의무복무에 더해 주는 기간(예: 0.25)
+ * 불산입_연수: 병역·면허정지·휴직 등 의무복무에 안 들어가고 기간만 늘어나는 기간
+ */
+(function (root) {
+  const 의무복무_기간 = 10;
+  const 그밖 = '그 밖의 지역';
+  const 전부산입_과목 = ['내과', '신경과', '외과', '신경외과', '심장혈관흉부외과', '산부인과', '소아청소년과', '응급의학과', '가정의학과'];
+  const 전문과목_26 = ['내과', '신경과', '정신건강의학과', '외과', '정형외과', '신경외과', '심장혈관흉부외과', '성형외과', '마취통증의학과', '산부인과', '소아청소년과', '안과', '이비인후과', '피부과', '비뇨의학과', '영상의학과', '방사선종양학과', '병리과', '진단검사의학과', '결핵과', '재활의학과', '예방의학과', '가정의학과', '응급의학과', '핵의학과', '직업환경의학과'];
+  // 레지던트 수련기간: 「전문의의 수련 및 자격 인정 등에 관한 규정」 제5조, 같은 규정 시행규칙(안내서 밖 근거). 나머지 과목 4년
+  const 레지던트_기본연수 = { '내과': 3, '외과': 3, '소아청소년과': 3, '결핵과': 3, '예방의학과': 3, '가정의학과': 3 };
+  const 인턴없음 = '인턴 안 함';
+  const 기본연수 = 과목 => 레지던트_기본연수[과목] || 4;
+  const 권역 = [
+    { 대학: ['건양대', '단국대', '순천향대', '을지대', '충남대'], 광역권: '대전·세종·충남·충북', 광역권_의무복무지역: '충청남도', 진료권: { '천안권': '천안시, 아산시', '공주권': '공주시, 계룡시', '서산권': '서산시, 당진시, 태안군', '논산권': '논산시, 금산군, 부여군, 서천군', '홍성권': '보령시, 청양군, 홍성군, 예산군' } },
+    { 대학: ['건국대', '충북대'], 광역권: '대전·세종·충남·충북', 광역권_의무복무지역: '충청북도', 진료권: { '청주권': '청주시, 보은군, 옥천군, 영동군, 증평군, 진천군', '충주권': '충주시, 괴산군, 음성군', '제천권': '제천시, 단양군' } },
+    { 대학: ['전남대', '조선대'], 광역권: '광주·전남·전북', 광역권_의무복무지역: '전라남도', 진료권: { '목포권': '목포시, 영암군, 무안군, 함평군, 진도군, 신안군', '여수권': '여수시', '순천권': '순천시, 광양시, 구례군, 고흥군, 보성군', '나주권': '나주시, 곡성군, 화순군', '해남권': '장흥군, 강진군, 해남군, 완도군', '영광권': '담양군, 영광군, 장성군' } },
+    { 대학: ['원광대', '전북대'], 광역권: '광주·전남·전북', 광역권_의무복무지역: '전북특별자치도', 진료권: { '전주권': '전주시, 김제시, 완주군, 진안군, 무주군', '군산권': '군산시', '익산권': '익산시', '정읍권': '정읍시, 고창군, 부안군', '남원권': '남원시, 장수군, 임실군, 순창군' } },
+    { 대학: ['경북대', '계명대', '대구가톨릭대', '동국대', '영남대'], 광역권: '대구·경북', 광역권_의무복무지역: '경상북도', 진료권: { '포항권': '포항시, 영덕군, 울진군, 울릉군', '경주권': '경주시, 영천시, 경산시, 청도군', '안동권': '안동시, 의성군, 청송군, 영양군', '구미권': '김천시, 구미시, 고령군, 성주군, 칠곡군', '영주권': '영주시, 예천군, 봉화군', '상주권': '상주시, 문경시' } },
+    { 대학: ['경상국립대', '고신대', '동아대', '부산대', '울산대', '인제대'], 광역권: '부산·울산·경남', 광역권_의무복무지역: '경상남도', 진료권: { '창원권': '창원시, 의령군, 함안군, 창녕군', '진주권': '진주시, 사천시, 남해군, 하동군, 산청군', '통영권': '통영시, 거제시, 고성군', '김해권': '김해시, 밀양시, 양산시', '거창권': '함양군, 거창군, 합천군' } },
+    { 대학: ['가톨릭관동대', '강원대', '연세대(원주·미래)', '한림대'], 광역권: '강원', 광역권_의무복무지역: '강원특별자치도', 진료권: { '춘천권': '춘천시, 홍천군, 철원군, 양구군, 화천군', '원주권': '원주시, 횡성군', '영월권': '영월군, 평창군, 정선군', '강릉권': '강릉시', '동해권': '동해시, 태백시, 삼척시', '속초권': '속초시, 인제군, 고성군, 양양군' } },
+    { 대학: ['제주대'], 광역권: '제주', 광역권_의무복무지역: '제주도(안내서 표기)', 진료권: { '제주권': '제주시', '서귀포권': '서귀포시' } },
+    { 대학: ['가천대', '성균관대(수원)', '아주대', '인하대', '차의과학대'], 광역권: null, 광역권_의무복무지역: null, 진료권: { '의정부권': '경기도 의정부시, 동두천시, 양주시, 연천군', '남양주권': '경기도 구리시, 남양주시, 가평군, 양평군', '이천권': '경기도 이천시, 여주시', '포천권': '경기도 포천시', '인천서북권': '인천광역시 서구, 강화군', '인천중부권': '인천광역시 중구, 동구, 미추홀구, 옹진군' } },
+  ];
+
+  function 찾기(대학) {
+    const k = String(대학).replace(/학교|\s/g, '').replace('대학', '대');
+    for (const g of 권역) {
+      if (g.대학.some(u => u.replace(/\(.*\)/, '') === k.replace(/\(.*\)/, ''))) return g;
+    }
+    return null;
+  }
+
+  // 대학을 고르면 수련 장소로 고를 수 있는 목록(그 권역 진료권 + 그 밖의 지역)
+  function 수련장소_목록(대학) {
+    const g = 찾기(대학);
+    if (!g) return [];
+    return Object.entries(g.진료권).map(([k, v]) => ({ 값: k, 표시: `${{k} (${{v})` })).concat([{ 값: 그밖, 표시: `${{그밖} (서울·광역시·다른 도 등)` }]);
+  }
+
+  function 산입비율(지역내, 과정, 과목) {
+    if (!지역내) return { 비율: 0, 근거: '의무복무지역 밖 수련: 산입 불가' };
+    if (과정 === '인턴') return { 비율: 0.5, 근거: '의무복무지역 안 인턴: 1/2 산입' };
+    if (전부산입_과목.includes(과목)) return { 비율: 1, 근거: `의무복무지역 안 ${{과목}(9개 과목): 전부 산입` };
+    if (전문과목_26.includes(과목)) return { 비율: 0.5, 근거: `의무복무지역 안 ${{과목}(9개 외 과목): 1/2 산입` };
+    return { 비율: null, 근거: `'${{과목}'은 안내서의 수련 가능 전문과목(26개)에 없음` };
+  }
+
+  function 계산(입력) {
+    const 경고 = [];
+    // ① 대학·선발
+    const g = 찾기(입력.의과대학);
+    if (!g) return { 오류: `'${{입력.의과대학}'은 지역의사선발전형 의과대학 목록에 없음` };
+    let 의무복무지역, 근무가능_진료권;
+    if (입력.선발단위 === '광역권') {
+      if (!g.광역권) return { 오류: '경기·인천 의과대학은 광역권 모집이 없음(진료권 선발만 가능)' };
+      의무복무지역 = g.광역권_의무복무지역;
+      근무가능_진료권 = Object.keys(g.진료권);
+      경고.push(`광역권 지원 자격 지역(${{g.광역권})과 의무복무지역(${{g.광역권_의무복무지역})은 다름. 근무 중 진료권을 바꾸려면 자료제출 필요`);
+    } else if (입력.선발단위 === '진료권') {
+      if (!g.진료권[입력.진료권]) return { 오류: `'${{입력.진료권}'은 ${{입력.의과대학}의 진료권이 아님. 가능: ${{Object.keys(g.진료권).join(', ')}` };
+      의무복무지역 = `${{입력.진료권}(${{g.진료권[입력.진료권]})`;
+      근무가능_진료권 = [입력.진료권];
+    } else return { 오류: "선발단위는 '진료권' 또는 '광역권'" };
+
+    // ② 인턴 → ③ 전공 → ④ 레지던트 (순서대로)
+    const 단계 = [];
+    if (입력.인턴 && 입력.인턴.장소 && 입력.인턴.장소 !== 인턴없음) 단계.push({ 단계: '② 인턴', 과정: '인턴', 과목: null, 장소: 입력.인턴.장소, 연수: Number(입력.인턴.연수 ?? 1) });
+    if (!입력.전공) return { 오류: '③ 전공을 고르세요' };
+    if ((!입력.인턴 || 입력.인턴.장소 === 인턴없음) && 입력.전공 !== '가정의학과') return { 오류: '인턴 없이 레지던트를 시작할 수 있는 전공은 가정의학과뿐입니다. ② 인턴 병원 위치를 고르세요' };
+    if (!입력.레지던트 || !입력.레지던트.장소) return { 오류: '④ 레지던트 수련 장소를 고르세요' };
+    단계.push({ 단계: '④ 레지던트', 과정: '레지던트', 과목: 입력.전공, 장소: 입력.레지던트.장소, 연수: Number(입력.레지던트.연수 ?? 기본연수(입력.전공)) });
+
+    const 수련 = 단계.map(t => {
+      const 지역내 = 근무가능_진료권.includes(t.장소);
+      if (!지역내 && t.장소 !== 그밖 && 입력.선발단위 === '진료권') 경고.push(`${{t.단계}: ${{t.장소}는 같은 권역이지만 선발 진료권(${{입력.진료권}) 밖이므로 의무복무지역 밖으로 계산함`);
+      const r = 산입비율(지역내, t.과정, t.과목);
+      if (r.비율 === null) 경고.push(r.근거);
+      return { ...t, 지역내, 산입비율: r.비율, 산입연수: (r.비율 || 0) * t.연수, 근거: r.근거 };
+    });
+    const 산입합 = 수련.reduce((s, t) => s + t.산입연수, 0);
+    const 수련연수합 = 수련.reduce((s, t) => s + t.연수, 0);
+    const 기타 = Number(입력.기타_산입_연수 || 0);
+    const 불산입 = Number(입력.불산입_연수 || 0);
+    const 남은 = Math.max(0, 의무복무_기간 - 산입합 - 기타);
+    if (수련.some(t => !t.지역내)) 경고.push('의무복무지역 밖 수련 기간은 의무복무에 들어가지 않음. 9개 과목 수련병원이 지역 안에 없으면 「수련 목적 별도 지정」 신청 가능');
+
+    // 연표(추정: 2027 입학, 휴학·유급 없음, 의대 6년)
+    const 입학 = Number(입력.입학연도 || 2027);
+    const 졸업 = 입학 + 6;
+    const 수련종료 = 졸업 + 수련연수합;
+    const 종료 = 수련종료 + 불산입 + 남은;
+    return {
+      의과대학: 입력.의과대학, 선발단위: 입력.선발단위, 의무복무지역, 근무가능_진료권,
+      의무복무_기간, 수련, 수련_산입_합계: 산입합, 기타_산입_연수: 기타, 불산입_연수: 불산입,
+      수련_후_남은_의무복무: 남은,
+      계산식: `10 − 수련 산입 ${{산입합} − 기타 산입 ${{기타} = ${{남은}`,
+      연표: { 입학, 졸업, 수련종료, 의무복무_종료: 종료 },
+      경고,
+      근거: '「2027학년도 지역의사선발전형 안내」 p.3, p.10~13'
+    };
+  }
+
+  const api = { 계산, 권역, 찾기, 수련장소_목록, 전부산입_과목, 전문과목_26, 기본연수, 의무복무_기간, 그밖, 인턴없음 };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.지역의사계산기 = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+const C=window.지역의사계산기;const $=s=>document.querySelector(s);
+const opt=(sel,list)=>{const v=sel.value;sel.innerHTML='';list.forEach(o=>{const e=document.createElement('option');e.value=o.값??o;e.textContent=o.표시??o;sel.appendChild(e)});if([...sel.options].some(o=>o.value===v))sel.value=v};
+const yr=y=>{const i=Math.floor(y),f=y-i;return f?`${{i}년 + ${{Math.round(f*12)}개월`:`${{i}년`};
+C.권역.forEach(g=>g.대학.forEach(u=>{const o=document.createElement('option');o.textContent=u;$('#u').appendChild(o)}));
+opt($('#m'),C.전문과목_26);
+function onUni(){const g=C.찾기($('#u').value);opt($('#j'),Object.keys(g.진료권));
+ $('#t').options[1].disabled=!g.광역권;if(!g.광역권)$('#t').value='진료권';
+ $('#jl').hidden=$('#t').value==='광역권';
+ const L=C.수련장소_목록($('#u').value);opt($('#ip'),L.concat([{값:C.인턴없음,표시:'인턴 안 함 (가정의학과만 가능)'}]));opt($('#rp'),L);calc()}
+function onMajor(){$('#ry').value=C.기본연수($('#m').value);$('#ryt').textContent=$('#ry').value+'년';$('#mt').textContent=C.전부산입_과목.includes($('#m').value)?'9개 과목: 지역 안 레지던트 기간 전부 산입':'9개 외 과목: 지역 안 레지던트 기간 1/2 산입';if($('#m').value==='가정의학과')$('#mt').textContent+=' · 인턴 없이 시작 가능';calc()}
+function calc(){const r=C.계산({의과대학:$('#u').value,선발단위:$('#t').value,진료권:$('#j').value,
+ 인턴:{장소:$('#ip').value,연수:+$('#iy').value},전공:$('#m').value,레지던트:{장소:$('#rp').value,연수:+$('#ry').value},
+ 기타_산입_연수:+$('#etc').value,불산입_연수:+$('#non').value,입학연도:+$('#yr').value});
+ if(r.오류){$('#out').innerHTML='<p class="w">'+r.오류+'</p>';return}
+ $('#area').innerHTML='의무복무지역 <b>'+r.의무복무지역+'</b> · 근무할 수 있는 진료권: '+r.근무가능_진료권.join(', ');
+ const tag=(el,t)=>{if(!t){el.textContent='인턴 없음';el.className='tag';return}el.textContent=t.지역내?'의무복무지역 안':'의무복무지역 밖';el.className='tag '+(t.지역내?'in':'out')};
+ tag($('#it'),r.수련.find(t=>t.과정==='인턴'));tag($('#rt'),r.수련.find(t=>t.과정==='레지던트'));
+ const Y=r.연표;
+ $('#out').innerHTML='<div class="res"><span class="k">수련 후 남은 의무복무</span><span class="v">'+r.수련_후_남은_의무복무+'년</span><span class="k">예상 종료: <b>'+yr(Y.의무복무_종료)+'</b> 무렵</span></div>'+
+  '<div class="tbl"><table><tr><th>단계</th><th>장소</th><th>기간</th><th>의무복무 산입</th></tr>'+
+  '<tr><td>① 의대</td><td>'+r.의과대학+'</td><td>6년 ('+Y.입학+'~'+Y.졸업+')</td><td>0년</td></tr>'+
+  r.수련.map(t=>'<tr><td>'+t.단계+(t.과목?' · '+t.과목:'')+'</td><td>'+t.장소+'</td><td>'+t.연수+'년</td><td><b>'+t.산입연수+'년</b><br><span class="note">'+t.근거+'</span></td></tr>').join('')+
+  '</table></div><p>계산식: '+r.계산식+'</p><p class="note">예상 종료 연도는 휴학·유급 없이 의대 6년을 가정하고, 불산입 '+r.불산입_연수+'년을 반영한 추정입니다.</p>'+
+  (r.경고.length?'<p class="w">'+r.경고.map(w=>'· '+w).join('<br>')+'</p>':'')}
+$('#u').onchange=onUni;$('#t').onchange=onUni;$('#m').onchange=onMajor;
+['#j','#ip','#iy','#rp','#ry','#etc','#non','#yr'].forEach(s=>$(s).oninput=calc);
+$('#ry').value=C.기본연수($('#m').value);onUni();onMajor();
+</script>
+
+</body></html>
